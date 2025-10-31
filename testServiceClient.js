@@ -11,7 +11,7 @@ const test = async () => {
     console.log("Item fetched successfully:", item)
 
     console.log("\n🔹 Testing getUser...")
-    const user = await serviceClient.getUser("672faae1c1f6d7e4b1d8829c")
+    const user = await serviceClient.getUser("6905074edb84b355745bafde")
     console.log("User fetched successfully:", user)
 
     console.log("\n🔹 Testing checkItemAvailability...")

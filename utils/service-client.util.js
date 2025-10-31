@@ -22,7 +22,24 @@ export const serviceClient = {
     }
   },
 
- 
+  getUser: async (userId) => {
+    try {
+      const response = await axios.get(
+        `${process.env.AUTH_SERVICE_URL}/service/users/${userId}`, 
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.SERVICE_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error(`Failed to fetch user ${userId}:`, error.message);
+      throw new Error(`Auth Service unavailable: ${error.message}`);
+    }
+  },
 
  
 
