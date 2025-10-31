@@ -14,13 +14,8 @@ const test = async () => {
     const user = await serviceClient.getUser("6905074edb84b355745bafde")
     console.log("User fetched successfully:", user)
 
-    console.log("\n🔹 Testing checkItemAvailability...")
-    const availability = await serviceClient.checkItemAvailability(
-      "6730b3b2a2d2f8a4a0c3e501",
-      "2025-11-01",
-      "2025-11-05"
-    )
-    console.log(" Item availability:", availability)
+   
+  
   } catch (err) {
     console.error("Test failed:", err.message)
   }
