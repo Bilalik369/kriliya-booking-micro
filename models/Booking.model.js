@@ -114,5 +114,25 @@ const bookingSchema = new mongoose.Schema(
   },
 )
 
+bookingSchema.methods.calculateTotal = function () {
+  const days = Math.ceil((this.endDate - this.startDate) / (1000 * 60 * 60 * 24))
+  this.pricing.totalDays = days
+  this.pricing.subtotal = this.pricing.pricePerDay * days
+  this.pricing.serviceFee = this.pricing.subtotal * 0.1 
+  this.pricing.total = this.pricing.subtotal + this.pricing.serviceFee + this.pricing.deposit
+  return this.pricing.total
+}
+
+bookingSchema.pre("save", function (next) {
+  if (this.startDate >= this.endDate) {
+    next(new Error("End date must be after start date"))
+  }
+  if (this.startDate < new Date()) {
+    next(new Error("Start date cannot be in the past"))
+  }
+  next()
+})
+
+
 const Booking = mongoose.model("Booking" , bookingSchema)
 export default Booking
