@@ -62,3 +62,34 @@ export const  createBooking= async(req , res)=>{
            return res.status(500).json({ msg: "Server error while creating booking", error: error.message });
     }
 }
+export const getAllBookings = async (req, res) => {
+  try {
+    let { page = 1, limit = 10, status, itemId, renterId, ownerId } = req.query;
+
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
+    const filter = {};
+    if (status) filter.status = { $in: status.split(',') }; 
+    if (itemId) filter.itemId = itemId;
+    if (renterId) filter.renterId = renterId;
+    if (ownerId) filter.ownerId = ownerId;
+
+    const bookings = await Booking.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    const count = await Booking.countDocuments(filter);
+
+    res.status(200).json({
+      bookings,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      totalBookings: count,
+    });
+  } catch (error) {
+    console.error("Get all bookings error:", error);
+    res.status(500).json({ msg: "Server error while fetching bookings", error: error.message });
+  }
+};
