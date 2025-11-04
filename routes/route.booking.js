@@ -1,14 +1,17 @@
-import express from "express";
-import {createBooking , getAllBookings, getBookingById} from "../controllers/booking.controller.js"
+import express from "express"; 
+import {createBooking , getAllBookings, getBookingById , getUserBookings} from "../controllers/booking.controller.js"
 import { authMiddleware , checkRole} from "../middleware/auth.middleware.js";
-
-
 const router = express.Router();
 
-router.post("/" ,authMiddleware, createBooking)
-router.get("/" ,authMiddleware, checkRole("admin") , getAllBookings)
-router.get("/:bookingId", authMiddleware, getBookingById)
 
 
+router.post("/", authMiddleware, createBooking);
 
-export default router
+
+router.get("/my-bookings", authMiddleware, getUserBookings);
+router.get("/:bookingId", authMiddleware, getBookingById);
+
+
+router.get("/", authMiddleware, checkRole("admin"), getAllBookings);
+
+export default router;
