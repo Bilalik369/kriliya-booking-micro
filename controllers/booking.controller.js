@@ -194,3 +194,37 @@ export const getUserBookings = async (req, res) => {
     });
   }
 };
+
+
+export const getOwnerBookings = async(req , res) =>{
+ try {
+ 
+    const { page = 1, limit = 10, status } = req.query;
+
+  
+    const filter = { ownerId: req.user.userId }
+    if (status) filter.status = status;
+
+    const bookings = await Booking.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
+
+    
+    const count = await Booking.countDocuments(filter);
+
+
+    return res.status(200).json({
+      bookings,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Number(page),
+      totalBookings: count,
+    });
+  } catch (error) {
+    console.error("Get user bookings error:", error);
+    return res.status(500).json({
+      msg: "Server error while fetching user bookings",
+      error: error.message,
+    });
+  }
+}
