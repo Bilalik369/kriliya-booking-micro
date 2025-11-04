@@ -6,6 +6,7 @@ import {serviceClient} from "../utils/service-client.util.js"
 
 export const  createBooking= async(req , res)=>{
     try {
+      console.log("✅ createBooking called with:", req.body);
         const { itemId, ownerId, startDate, endDate, pricePerDay, deposit, pickupLocation, notes } = req.body
          
         let item 
@@ -93,3 +94,69 @@ export const getAllBookings = async (req, res) => {
     res.status(500).json({ msg: "Server error while fetching bookings", error: error.message });
   }
 };
+export const getBookingById = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+   
+    if (!bookingId) {
+      return res.status(400).json({ msg: "Booking ID is required" });
+    }
+
+    
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
+
+   
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    if (
+      booking.renterId !== userId &&
+      booking.ownerId !== userId &&
+      userRole !== "admin"
+    ) {
+      return res.status(403).json({ msg: "You are not authorized to view this booking" });
+    }
+
+
+    const enrichedBooking = booking.toObject();
+
+   
+    try {
+      const item = await serviceClient.getItem(booking.itemId);
+      enrichedBooking.item = item;
+    } catch (error) {
+      console.warn(` Could not fetch item details: ${error.message}`);
+    }
+
+
+    try {
+      const renter = await serviceClient.getUser(booking.renterId);
+      enrichedBooking.renter = renter;
+    } catch (error) {
+      console.warn(` Could not fetch renter details: ${error.message}`);
+    }
+
+
+    try {
+      const owner = await serviceClient.getUser(booking.ownerId);
+      enrichedBooking.owner = owner;
+    } catch (error) {
+      console.warn(` Could not fetch owner details: ${error.message}`);
+    }
+
+   
+    return res.status(200).json({ booking: enrichedBooking });
+
+  } catch (error) {
+    console.error(" Error fetching booking:", error);
+    return res.status(500).json({
+      msg: "Server error while fetching booking",
+      error: error.message,
+    });
+  }
+};
+

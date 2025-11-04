@@ -6,7 +6,7 @@ export const serviceClient = {
   getItem: async (itemId) => {
     try {
       const response = await axios.get(
-        `${process.env.ITEM_SERVICE_URL}/service/${itemId}`, 
+        `${process.env.ITEM_SERVICE_URL}/api/items/service/${itemId}`, 
         {
           headers: {
             Authorization: `Bearer ${process.env.SERVICE_TOKEN}`,
@@ -25,7 +25,7 @@ export const serviceClient = {
   getUser: async (userId) => {
     try {
       const response = await axios.get(
-        `${process.env.AUTH_SERVICE_URL}/service/users/${userId}`, 
+         `${process.env.AUTH_SERVICE_URL}/api/auth/service/users/${userId}`, 
         {
           headers: {
             Authorization: `Bearer ${process.env.SERVICE_TOKEN}`,
