@@ -6,7 +6,7 @@ import {serviceClient} from "../utils/service-client.util.js"
 
 export const  createBooking= async(req , res)=>{
     try {
-      console.log("✅ createBooking called with:", req.body);
+      console.log(" createBooking called with:", req.body);
         const { itemId, ownerId, startDate, endDate, pricePerDay, deposit, pickupLocation, notes } = req.body
          
         let item 
@@ -94,6 +94,8 @@ export const getAllBookings = async (req, res) => {
     res.status(500).json({ msg: "Server error while fetching bookings", error: error.message });
   }
 };
+
+
 export const getBookingById = async (req, res) => {
   try {
     const { bookingId } = req.params;
