@@ -1,3 +1,4 @@
+import { json } from "express";
 import Booking from "../models/Booking.model.js";
 import {serviceClient} from "../utils/service-client.util.js"
 
@@ -228,3 +229,59 @@ export const getOwnerBookings = async(req , res) =>{
     });
   }
 }
+
+export const updateBookingStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status, notes } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
+
+    if (status === "confirmed" || status === "rejected") {
+      if (booking.ownerId.toString() !== req.user.userId && req.user.role !== "admin") {
+        return res.status(403).json({ msg: "Only the owner can confirm or reject bookings" });
+      }
+    }
+
+    if (status === "cancelled") {
+      if (
+        booking.renterId.toString() !== req.user.userId &&
+        booking.ownerId.toString() !== req.user.userId &&
+        req.user.role !== "admin"
+      ) {
+        return res.status(403).json({ msg: "You are not authorized to cancel this booking" });
+      }
+
+      booking.cancellation = {
+        cancelledBy: req.user.userId,
+        cancelledAt: new Date(),
+        reason: notes,
+      };
+    }
+
+    booking.status = status;
+
+    if (notes) {
+      if (booking.ownerId.toString() === req.user.userId) {
+        booking.notes.ownerNotes = notes;
+      } else {
+        booking.notes.renterNotes = notes;
+      }
+    }
+
+    await booking.save();
+
+    return res.status(201).json({
+      msg: "Booking status updated successfully",
+      booking,
+    });
+
+  } catch (error) {
+    console.error("Update booking status error:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
