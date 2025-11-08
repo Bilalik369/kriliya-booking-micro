@@ -162,7 +162,7 @@ export const getBookingById = async (req, res) => {
     });
   }
 };
-
+ 
 export const getUserBookings = async (req, res) => {
   try {
  
@@ -283,5 +283,40 @@ export const updateBookingStatus = async (req, res) => {
   } catch (error) {
     console.error("Update booking status error:", error);
     return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const updatePaymentStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status, method, transactionId } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
+
+   
+    booking.payment.status = status;
+    if (method) booking.payment.method = method;
+    if (transactionId) booking.payment.transactionId = transactionId;
+
+  
+    if (status === "paid") {
+      booking.payment.paidAt = new Date();
+      booking.status = "confirmed";
+    }
+
+    await booking.save();
+
+    return res.status(200).json({
+      booking,
+      msg: "Payment status updated successfully"
+    });
+
+  } catch (error) {
+    console.error("Update payment status error:", error);
+    return res.status(500).json({ msg: "Failed to update payment status" });
   }
 };

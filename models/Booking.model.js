@@ -124,14 +124,21 @@ bookingSchema.methods.calculateTotal = function () {
 }
 
 bookingSchema.pre("save", function (next) {
-  if (this.startDate >= this.endDate) {
-    next(new Error("End date must be after start date"))
+  
+  if (this.isModified("startDate") || this.isModified("endDate")) {
+
+    if (this.startDate >= this.endDate) {
+      return next(new Error("End date must be after start date"));
+    }
+
+    if (this.startDate < new Date()) {
+      return next(new Error("Start date cannot be in the past"));
+    }
   }
-  if (this.startDate < new Date()) {
-    next(new Error("Start date cannot be in the past"))
-  }
-  next()
-})
+
+  next();
+});
+
 
 
 const Booking = mongoose.model("Booking" , bookingSchema)
