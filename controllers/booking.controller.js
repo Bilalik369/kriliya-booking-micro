@@ -320,3 +320,33 @@ export const updatePaymentStatus = async (req, res) => {
     return res.status(500).json({ msg: "Failed to update payment status" });
   }
 };
+
+
+export const checkIn = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { condition, photo, notes } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ msg: "Booking not found" });
+
+    if (booking.ownerId.toString() !== req.user.userId && req.user.role !== "admin") {
+      return res.status(403).json({ msg: "Only the owner can perform check-in" });
+    }
+
+    booking.checkIn = {
+      date: new Date(),
+      condition,
+      photos: photo || [],
+      notes,
+    };
+    booking.status = "active";
+
+    await booking.save();
+
+    return res.status(200).json({ booking, msg: "Check-in completed successfully" });
+  } catch (error) {
+    console.error("Check-in error:", error);
+    return res.status(500).json({ msg: "Failed to complete check-in", error: error.message });
+  }
+};
