@@ -350,3 +350,38 @@ export const checkIn = async (req, res) => {
     return res.status(500).json({ msg: "Failed to complete check-in", error: error.message });
   }
 };
+
+export const checkOut = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { condition, photos, notes } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ msg: "Booking not found" });
+
+    if (
+      booking.ownerId.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ msg: "Only the owner can perform check-out" });
+    }
+
+   
+    booking.checkOut = {
+      date: new Date(),
+      condition,
+      photos: photos || [],
+      notes,
+    };
+
+
+    booking.status = "completed";
+
+    await booking.save();
+
+    return res.status(200).json({ booking, msg: "Check-out completed successfully" });
+  } catch (error) {
+    console.error("Check-out error:", error);
+    return res.status(500).json({ msg: "Failed to complete check-out", error: error.message });
+  }
+};
