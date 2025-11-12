@@ -293,6 +293,24 @@ export const updateBookingStatus = async (req, res) => {
 
     await booking.save();
 
+    if(status==="confirmed"){
+      try {
+        const renter = await serviceClient.getUser(booking.renterId)
+        const item = await serviceClient.getItem(booking.itemId)
+
+        await axios.post(`${process.env.NOTIFICATION_SERVICE_URL}/booking-confirmed`,{
+          renterEmail: renter.email,
+          renterName: renter.firstName + " " + renter.lastName,
+          itemTitle: item.title,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+        })
+        
+      } catch (error) {
+         console.error("Failed to send booking confirmed notification:", err.message);
+      }
+    }
+
     return res.status(201).json({
       msg: "Booking status updated successfully",
       booking,
