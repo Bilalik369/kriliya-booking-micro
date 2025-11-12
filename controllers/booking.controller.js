@@ -1,7 +1,7 @@
-import { json } from "express";
+
 import Booking from "../models/Booking.model.js";
 import {serviceClient} from "../utils/service-client.util.js"
-
+import axios from "axios";
 
 
 
@@ -57,6 +57,22 @@ export const  createBooking= async(req , res)=>{
 
     await booking.save()
 
+    try {
+      const owner = await serviceClient.getUser(ownerId);
+      const renter = await serviceClient.getUser(req.user.userId)
+
+      await axios.post(`${process.env.NOTIFICATION_SERVICE_URL}/booking-request` , {
+         ownerEmail:owner.email,
+        ownerName: owner.firstName + " " + owner.lastName,
+        itemTitle : (await serviceClient.getItem(itemId)).title,
+        renterName: renter.firstName + " " + renter.lastName,
+        startDate,
+        endDate,
+      })
+    } catch (error) {
+       console.error("Notification Service Error:", err.message);
+    }
+   
 
     return res.status(201).json({booking})
     } catch (error) {
@@ -64,6 +80,8 @@ export const  createBooking= async(req , res)=>{
            return res.status(500).json({ msg: "Server error while creating booking", error: error.message });
     }
 }
+
+
 export const getAllBookings = async (req, res) => {
   try {
     let { page = 1, limit = 10, status, itemId, renterId, ownerId } = req.query;
