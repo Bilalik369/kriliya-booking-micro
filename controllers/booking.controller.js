@@ -324,6 +324,24 @@ export const updateBookingStatus = async (req, res) => {
   } catch (error) {
     console.error("Failed to send booking rejected notification:", error.message);
   }
+} 
+
+ if(status === "cancelled") {
+  try {
+    const renter = await serviceClient.getUser(booking.renterId);
+    const item = await serviceClient.getItem(booking.itemId);
+    const cancellingUser = await serviceClient.getUser(req.user.userId);
+
+    await axios.post(`${process.env.NOTIFICATION_SERVICE_URL}/booking-cancelled`, {
+      email: renter.email,
+      userName: renter.firstName + " " + renter.lastName,
+      itemTitle: item.title,
+      cancelledBy: cancellingUser.firstName + " " + cancellingUser.lastName 
+    });
+
+  } catch (error) {
+    console.error("Failed to send booking cancelled notification:", error.message);
+  }
 }
 
 
