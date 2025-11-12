@@ -311,6 +311,22 @@ export const updateBookingStatus = async (req, res) => {
       }
     }
 
+    
+    if (status === "rejected") {
+  try {
+    const renter = await serviceClient.getUser(booking.renterId);
+    await axios.post(`${process.env.NOTIFICATION_SERVICE_URL}/booking-rejected`, {
+      renterEmail: renter.email,
+      renterName: renter.firstName + " " + renter.lastName,
+      itemTitle: (await serviceClient.getItem(booking.itemId)).title,
+      reason: req.body.notes || "No reason provided",
+    });
+  } catch (error) {
+    console.error("Failed to send booking rejected notification:", error.message);
+  }
+}
+
+
     return res.status(201).json({
       msg: "Booking status updated successfully",
       booking,
